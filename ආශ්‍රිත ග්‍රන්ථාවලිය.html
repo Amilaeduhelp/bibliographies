@@ -1,0 +1,908 @@
+<!DOCTYPE html>
+<html lang="si">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>මූලාශ්‍ර නාමාවලිය ජනකය</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .header {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        h1 {
+            color: #2c3e50;
+            margin: 0 0 10px 0;
+            font-size: 2.5em;
+        }
+        .subtitle {
+            color: #7f8c8d;
+            font-size: 1.1em;
+        }
+        .add-set-container {
+            text-align: center;
+            margin: 20px 0;
+        }
+        .add-set-btn {
+            padding: 15px 40px;
+            background: linear-gradient(135deg, #00b09b, #96c93d);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0,176,155,0.4);
+            transition: transform 0.2s;
+        }
+        .add-set-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,176,155,0.6);
+        }
+        .reference-set {
+            background: white;
+            padding: 25px;
+            margin-bottom: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+            position: relative;
+            animation: slideIn 0.3s ease;
+        }
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .reference-set h3 {
+            color: #2c3e50;
+            margin-top: 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .delete-set-btn {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.3s;
+        }
+        .delete-set-btn:hover {
+            background: #c0392b;
+        }
+        .source-type-select {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 2px solid #3498db;
+            border-radius: 8px;
+            font-size: 15px;
+            background: #ecf0f1;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        .person-group {
+            margin-bottom: 15px;
+            padding: 15px;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 8px;
+            border-left: 4px solid #3498db;
+        }
+        .person-entry {
+            display: grid;
+            grid-template-columns: 1fr 1fr auto;
+            gap: 10px;
+            margin-bottom: 10px;
+            align-items: center;
+        }
+        .person-label {
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 8px;
+            font-size: 15px;
+        }
+        input[type="text"], input[type="url"], input[type="date"] {
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+        input[type="text"]:focus, input[type="url"]:focus, input[type="date"]:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+        .add-btn, .remove-btn {
+            padding: 8px 18px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        .add-btn {
+            background: linear-gradient(135deg, #56ab2f, #a8e063);
+            color: white;
+            box-shadow: 0 2px 8px rgba(86,171,47,0.3);
+        }
+        .remove-btn {
+            background: linear-gradient(135deg, #eb3349, #f45c43);
+            color: white;
+            box-shadow: 0 2px 8px rgba(235,51,73,0.3);
+        }
+        .add-btn:hover, .remove-btn:hover {
+            transform: scale(1.05);
+        }
+        .book-info {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #9b59b6;
+        }
+        .book-info input {
+            width: 100%;
+            margin-bottom: 12px;
+        }
+        .book-info label {
+            display: block;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 6px;
+            font-size: 14px;
+        }
+        .action-buttons {
+            text-align: center;
+            margin: 30px 0;
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+        }
+        .action-buttons button {
+            padding: 15px 35px;
+            margin: 8px;
+            font-size: 16px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+        .harvard-btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+        .chicago-btn {
+            background: linear-gradient(135deg, #f093fb, #f5576c);
+            color: white;
+        }
+        .apa-btn {
+            background: linear-gradient(135deg, #4facfe, #00f2fe);
+            color: white;
+        }
+        .sort-btn {
+            background: linear-gradient(135deg, #fa709a, #fee140);
+            color: white;
+        }
+        .copy-btn {
+            background: linear-gradient(135deg, #30cfd0, #330867);
+            color: white;
+        }
+        .action-buttons button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.3);
+        }
+        .output {
+            background: white;
+            padding: 30px;
+            margin-top: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+            display: none;
+        }
+        .output.show {
+            display: block;
+        }
+        .output h2 {
+            color: #2c3e50;
+            margin-top: 0;
+            border-bottom: 3px solid #3498db;
+            padding-bottom: 10px;
+        }
+        .output pre {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            line-height: 2;
+            border-left: 4px solid #3498db;
+        }
+        .source-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+        .badge-primary {
+            background: #3498db;
+            color: white;
+        }
+        .badge-secondary {
+            background: #9b59b6;
+            color: white;
+        }
+        .badge-tertiary {
+            background: #e67e22;
+            color: white;
+        }
+        .badge-web {
+            background: #16a085;
+            color: white;
+        }
+        .empty-message {
+            text-align: center;
+            color: #7f8c8d;
+            font-size: 18px;
+            padding: 40px;
+            background: #ecf0f1;
+            border-radius: 10px;
+        }
+        .info-note {
+            background: #e8f5e9;
+            border-left: 4px solid #4caf50;
+            padding: 12px;
+            margin-bottom: 15px;
+            border-radius: 5px;
+            font-size: 13px;
+            color: #2e7d32;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            padding: 20px;
+            background: rgba(255,255,255,0.9);
+            border-radius: 10px;
+            color: #2c3e50;
+            font-size: 14px;
+        }
+        .required {
+            color: #e74c3c;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>📚 මූලාශ්‍ර නාමාවලිය ජනකය</h1>
+        <p class="subtitle">Academic Reference Bibliography Generator with Multiple Citation Styles</p>
+    </div>
+
+    <div class="add-set-container">
+        <button class="add-set-btn" onclick="addNewSet()">➕ Add New Reference Set</button>
+    </div>
+
+    <div id="references-container"></div>
+
+    <div class="add-set-container">
+        <button class="add-set-btn" onclick="addNewSet()">➕ Add New Reference Set</button>
+    </div>
+
+    <div class="action-buttons">
+        <button class="sort-btn" onclick="sortAlphabetically()">🔤 අකාරාදියට සකසන්න (Sort A-Z)</button>
+        <br><br>
+        <button class="harvard-btn" onclick="generateHarvard()">Harvard Style</button>
+        <button class="chicago-btn" onclick="generateChicago()">Chicago Style</button>
+        <button class="apa-btn" onclick="generateAPA()">APA 7th Edition</button>
+    </div>
+
+    <div class="output" id="output">
+        <h2>📋 මූලාශ්‍ර නාමාවලිය / Bibliography:</h2>
+        <pre id="result"></pre>
+        <div class="action-buttons">
+            <button class="copy-btn" onclick="copyText()">📋 Copy Text</button>
+        </div>
+    </div>
+
+    <div class="footer">
+        © 2025 Amila Udawattha - 0701551279
+    </div>
+
+    <script>
+        let data = [];
+        let nextId = 1;
+
+        function addNewSet() {
+            const newSet = {
+                id: nextId++,
+                sourceType: 'secondary',
+                authors: [{ firstName: '', lastName: '' }],
+                translators: [{ firstName: '', lastName: '' }],
+                editors: [{ firstName: '', lastName: '' }],
+                bookTitle: '',
+                publisher: '',
+                year: '',
+                url: '',
+                organization: '',
+                accessDate: ''
+            };
+            data.push(newSet);
+            renderAll();
+            
+            setTimeout(() => {
+                const newElement = document.querySelector(`[data-ref-id="${newSet.id}"]`);
+                if (newElement) {
+                    newElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }, 100);
+        }
+
+        function deleteSet(id) {
+            if (confirm('මෙම මූලාශ්‍රය ඉවත් කිරීමට අවශ්‍යද?')) {
+                data = data.filter(item => item.id !== id);
+                renderAll();
+            }
+        }
+
+        function getFieldsForSourceType(type) {
+            switch(type) {
+                case 'primary':
+                    return {
+                        showAuthors: true,
+                        showTranslators: false,
+                        showEditors: false,
+                        showURL: true,
+                        showPublisher: true,
+                        showYear: true,
+                        titleLabel: 'ලියවිල්ලේ/ලේඛනයේ නම / Document Title',
+                        info: 'Primary Sources: මුල් ලියවිලි, දිනපොත්, ඡායාරූප, නීති ලේඛන ආදිය'
+                    };
+                case 'secondary':
+                    return {
+                        showAuthors: true,
+                        showTranslators: true,
+                        showEditors: true,
+                        showURL: false,
+                        showPublisher: true,
+                        showYear: true,
+                        titleLabel: 'පොතේ නම / Book Title',
+                        info: 'Secondary Sources: පාඨ්‍යපොත්, විශ්ලේෂණ, චරිතාපදාන ආදිය'
+                    };
+                case 'tertiary':
+                    return {
+                        showAuthors: false,
+                        showTranslators: false,
+                        showEditors: true,
+                        showURL: false,
+                        showPublisher: true,
+                        showYear: true,
+                        titleLabel: 'ග්‍රන්ථයේ නම / Reference Work Title',
+                        info: 'Tertiary Sources: ශබ්දකෝෂ, විශ්වකෝෂ (සාමාන්‍යයෙන් කතුවරු නොමැත, title පමණක් මදි)'
+                    };
+                case 'web':
+                    return {
+                        showAuthors: true,
+                        showTranslators: false,
+                        showEditors: false,
+                        showURL: true,
+                        showOrganization: true,
+                        showAccessDate: true,
+                        showPublisher: false,
+                        showYear: true,
+                        titleLabel: 'ලිපියේ නම / Article Title',
+                        info: 'Web Sources: වෙබ් අඩවි, ඔන්ලයින් ලිපි (URL අනිවාර්‍ය, ආයතනය හෝ කතෘ එකක් වත් තිබිය යුතුයි)'
+                    };
+                default:
+                    return { 
+                        showAuthors: true, 
+                        showTranslators: true, 
+                        showEditors: true, 
+                        showURL: false,
+                        showPublisher: true,
+                        showYear: true,
+                        titleLabel: 'නම / Title'
+                    };
+            }
+        }
+
+        function renderAll() {
+            const container = document.getElementById('references-container');
+            
+            if (data.length === 0) {
+                container.innerHTML = '<div class="empty-message">කරුණාකර "Add New Reference Set" බොත්තම ක්ලික් කර මූලාශ්‍ර එකතු කරන්න</div>';
+                return;
+            }
+            
+            container.innerHTML = '';
+            
+            data.forEach((ref, index) => {
+                const setDiv = document.createElement('div');
+                setDiv.className = 'reference-set';
+                setDiv.setAttribute('data-ref-id', ref.id);
+                
+                const badgeClass = {
+                    'primary': 'badge-primary',
+                    'secondary': 'badge-secondary',
+                    'tertiary': 'badge-tertiary',
+                    'web': 'badge-web'
+                }[ref.sourceType];
+                
+                const badgeText = {
+                    'primary': 'Primary Source',
+                    'secondary': 'Secondary Source',
+                    'tertiary': 'Tertiary Source',
+                    'web': 'Web Source'
+                }[ref.sourceType];
+
+                const fields = getFieldsForSourceType(ref.sourceType);
+                
+                let html = `
+                    <h3>
+                        <span>මූලාශ්‍රය ${index + 1} <span class="source-badge ${badgeClass}">${badgeText}</span></span>
+                        <button class="delete-set-btn" onclick="deleteSet(${ref.id})">🗑️ Delete</button>
+                    </h3>
+                    
+                    <label style="font-weight: bold; color: #2c3e50; display: block; margin-bottom: 8px;">මූලාශ්‍ර වර්ගය තෝරන්න:</label>
+                    <select class="source-type-select" onchange="updateSourceType(${ref.id}, this.value)">
+                        <option value="primary" ${ref.sourceType === 'primary' ? 'selected' : ''}>Primary Source (මූලික මූලාශ්‍ර)</option>
+                        <option value="secondary" ${ref.sourceType === 'secondary' ? 'selected' : ''}>Secondary Source (ද්විතීයික මූලාශ්‍ර)</option>
+                        <option value="tertiary" ${ref.sourceType === 'tertiary' ? 'selected' : ''}>Tertiary Source (තෘතීයික මූලාශ්‍ර)</option>
+                        <option value="web" ${ref.sourceType === 'web' ? 'selected' : ''}>Web Source (වෙබ් මූලාශ්‍ර)</option>
+                    </select>
+                    
+                    <div class="info-note">${fields.info}</div>
+                `;
+
+                if (fields.showOrganization) {
+                    html += `
+                        <div class="person-group">
+                            <div class="person-label">ආයතනය / Website/Organization (විකල්ප):</div>
+                            <input type="text" value="${ref.organization || ''}" 
+                                   onchange="updateField(${ref.id}, 'organization', this.value)"
+                                   placeholder="e.g., BBC, Wikipedia, WHO" style="width: 100%; padding: 10px;">
+                            <small style="color: #7f8c8d; display: block; margin-top: 5px;">නිදසුන: BBC Sinhala, විකිපීඩියා, ලංකාදීප</small>
+                        </div>
+                    `;
+                }
+                
+                if (fields.showAuthors) {
+                    const authorLabel = ref.sourceType === 'web' ? 
+                        'කතෘ / Author (විකල්ප - ආයතනය නොමැති නම් අනිවාර්‍ය):' : 
+                        'කතුවරු / Authors:';
+                    html += `
+                        <div class="person-group">
+                            <div class="person-label">${authorLabel}</div>
+                            <div id="authors-${ref.id}"></div>
+                            <button class="add-btn" onclick="addPerson(${ref.id}, 'authors')">➕ කතුවරයෙකු එක් කරන්න</button>
+                        </div>
+                    `;
+                }
+                
+                if (fields.showTranslators) {
+                    html += `
+                        <div class="person-group">
+                            <div class="person-label">පරිවර්තකයන් / Translators (විකල්ප):</div>
+                            <div id="translators-${ref.id}"></div>
+                            <button class="add-btn" onclick="addPerson(${ref.id}, 'translators')">➕ පරිවර්තකයෙකු එක් කරන්න</button>
+                        </div>
+                    `;
+                }
+                
+                if (fields.showEditors) {
+                    const editorRequired = ref.sourceType === 'tertiary' ? '<span class="required">*</span>' : '(විකල්ප)';
+                    html += `
+                        <div class="person-group">
+                            <div class="person-label">සංස්කාරකවරු / Editors ${editorRequired}:</div>
+                            <div id="editors-${ref.id}"></div>
+                            <button class="add-btn" onclick="addPerson(${ref.id}, 'editors')">➕ සංස්කාරකයෙකු එක් කරන්න</button>
+                        </div>
+                    `;
+                }
+                
+                html += `<div class="book-info">`;
+                
+                const titleRequired = (ref.sourceType === 'web' || ref.sourceType === 'tertiary') ? '<span class="required">*</span>' : '';
+                html += `
+                    <label>${fields.titleLabel} ${titleRequired}:</label>
+                    <input type="text" value="${ref.bookTitle}" onchange="updateField(${ref.id}, 'bookTitle', this.value)">
+                `;
+                
+                if (fields.showPublisher) {
+                    html += `
+                        <label>ප්‍රකාශකයෝ / Publisher:</label>
+                        <input type="text" value="${ref.publisher}" onchange="updateField(${ref.id}, 'publisher', this.value)">
+                    `;
+                }
+                
+                if (fields.showYear) {
+                    html += `
+                        <label>ප්‍රකාශිත වර්ෂය / Year:</label>
+                        <input type="text" value="${ref.year}" onchange="updateField(${ref.id}, 'year', this.value)" placeholder="2024">
+                    `;
+                }
+                
+                if (fields.showURL) {
+                    const urlRequired = ref.sourceType === 'web' ? '<span class="required">*</span>' : '(විකල්ප)';
+                    html += `
+                        <label>URL ${urlRequired}:</label>
+                        <input type="url" value="${ref.url}" onchange="updateField(${ref.id}, 'url', this.value)" 
+                               placeholder="https://example.com/article">
+                    `;
+                }
+                
+                if (fields.showAccessDate) {
+                    html += `
+                        <label>ප්‍රවේශ දිනය / Access Date (විකල්ප):</label>
+                        <input type="date" value="${ref.accessDate || ''}" onchange="updateField(${ref.id}, 'accessDate', this.value)">
+                    `;
+                }
+                
+                html += `</div>`;
+                
+                setDiv.innerHTML = html;
+                container.appendChild(setDiv);
+                
+                if (fields.showAuthors) renderPersonGroup(ref.id, 'authors');
+                if (fields.showTranslators) renderPersonGroup(ref.id, 'translators');
+                if (fields.showEditors) renderPersonGroup(ref.id, 'editors');
+            });
+        }
+
+        function updateSourceType(id, type) {
+            const ref = data.find(item => item.id === id);
+            if (ref) {
+                ref.sourceType = type;
+                renderAll();
+            }
+        }
+
+        function renderPersonGroup(refId, type) {
+            const ref = data.find(item => item.id === refId);
+            if (!ref) return;
+            
+            const container = document.getElementById(`${type}-${refId}`);
+            if (!container) return;
+            
+            container.innerHTML = '';
+            
+            ref[type].forEach((person, personIndex) => {
+                const entryDiv = document.createElement('div');
+                entryDiv.className = 'person-entry';
+                entryDiv.innerHTML = `
+                    <input type="text" placeholder="මුල නම / First Name" value="${person.firstName}" 
+                           onchange="updatePerson(${refId}, '${type}', ${personIndex}, 'firstName', this.value)">
+                    <input type="text" placeholder="අග නම / Last Name" value="${person.lastName}" 
+                           onchange="updatePerson(${refId}, '${type}', ${personIndex}, 'lastName', this.value)">
+                    ${ref[type].length > 1 ? 
+                        `<button class="remove-btn" onclick="removePerson(${refId}, '${type}', ${personIndex})">❌</button>` : 
+                        '<span></span>'}
+                `;
+                container.appendChild(entryDiv);
+            });
+        }
+
+        function addPerson(refId, type) {
+            const ref = data.find(item => item.id === refId);
+            if (ref) {
+                ref[type].push({ firstName: '', lastName: '' });
+                renderPersonGroup(refId, type);
+            }
+        }
+
+        function removePerson(refId, type, personIndex) {
+            const ref = data.find(item => item.id === refId);
+            if (ref && ref[type].length > 1) {
+                ref[type].splice(personIndex, 1);
+                renderPersonGroup(refId, type);
+            }
+        }
+
+        function updatePerson(refId, type, personIndex, field, value) {
+            const ref = data.find(item => item.id === refId);
+            if (ref && ref[type][personIndex]) {
+                ref[type][personIndex][field] = value;
+            }
+        }
+
+        function updateField(refId, field, value) {
+            const ref = data.find(item => item.id === refId);
+            if (ref) {
+                ref[field] = value;
+            }
+        }
+
+        function formatAuthors(people, style = 'harvard') {
+            const filtered = people.filter(p => p.firstName.trim() || p.lastName.trim());
+            if (filtered.length === 0) return '';
+            
+            if (style === 'apa') {
+                if (filtered.length === 1) {
+                    return `${filtered[0].lastName}, ${filtered[0].firstName.charAt(0)}.`;
+                } else if (filtered.length === 2) {
+                    return `${filtered[0].lastName}, ${filtered[0].firstName.charAt(0)}., & ${filtered[1].lastName}, ${filtered[1].firstName.charAt(0)}.`;
+                } else if (filtered.length <= 20) {
+                    const allButLast = filtered.slice(0, -1).map(p => `${p.lastName}, ${p.firstName.charAt(0)}.`).join(', ');
+                    const last = filtered[filtered.length - 1];
+                    return `${allButLast}, & ${last.lastName}, ${last.firstName.charAt(0)}.`;
+                } else {
+                    const first19 = filtered.slice(0, 19).map(p => `${p.lastName}, ${p.firstName.charAt(0)}.`).join(', ');
+                    const last = filtered[filtered.length - 1];
+                    return `${first19}, ... ${last.lastName}, ${last.firstName.charAt(0)}.`;
+                }
+            } else if (style === 'chicago') {
+                if (filtered.length === 1) {
+                    return `${filtered[0].lastName}, ${filtered[0].firstName}`;
+                } else if (filtered.length === 2) {
+                    return `${filtered[0].lastName}, ${filtered[0].firstName}, and ${filtered[1].firstName} ${filtered[1].lastName}`;
+                } else {
+                    return `${filtered[0].lastName}, ${filtered[0].firstName}, et al.`;
+                }
+            } else {
+                if (filtered.length === 1) {
+                    return `${filtered[0].lastName}, ${filtered[0].firstName.charAt(0)}.`;
+                } else if (filtered.length === 2) {
+                    return `${filtered[0].lastName}, ${filtered[0].firstName.charAt(0)}. and ${filtered[1].lastName}, ${filtered[1].firstName.charAt(0)}.`;
+                } else {
+                    return `${filtered[0].lastName}, ${filtered[0].firstName.charAt(0)}. et al.`;
+                }
+            }
+        }
+
+        function sortAlphabetically() {
+            const validRefs = data.filter(ref => {
+                if (ref.sourceType === 'web') {
+                    return ref.url.trim();
+                } else if (ref.sourceType === 'tertiary') {
+                    return ref.bookTitle.trim();
+                } else {
+                    return ref.bookTitle.trim();
+                }
+            });
+            
+            if (validRefs.length === 0) {
+                alert('අකාරාදියට සැකසීමට අවශ්‍ය නම් අවම වශයෙන් එක් සම්පූර්ණ මූලාශ්‍රයක් තිබිය යුතුය');
+                return;
+            }
+            
+            data.sort((a, b) => {
+                const aKey = a.organization?.trim() || a.authors[0]?.lastName?.trim() || a.editors[0]?.lastName?.trim() || a.bookTitle?.trim() || '';
+                const bKey = b.organization?.trim() || b.authors[0]?.lastName?.trim() || b.editors[0]?.lastName?.trim() || b.bookTitle?.trim() || '';
+                return aKey.toLowerCase().localeCompare(bKey.toLowerCase());
+            });
+            
+            renderAll();
+            alert('✅ මූලාශ්‍ර අකාරාදියට සකසන ලදි! (References sorted alphabetically)');
+        }
+
+        function formatAccessDate(dateStr) {
+            if (!dateStr) return '';
+            const date = new Date(dateStr);
+            const months = ['January', 'February', 'March', 'April', 'May', 'June', 
+                          'July', 'August', 'September', 'October', 'November', 'December'];
+            return `${date.getDate()} ${months[date.getMonth()]} ${date.getFullYear()}`;
+        }
+
+        function generateHarvard() {
+            let output = '';
+            const validRefs = data.filter(ref => {
+                if (ref.sourceType === 'web') {
+                    return ref.url.trim() && (ref.organization?.trim() || ref.authors[0]?.lastName?.trim());
+                } else if (ref.sourceType === 'tertiary') {
+                    return ref.bookTitle.trim();
+                }
+                return ref.bookTitle.trim();
+            });
+            
+            if (validRefs.length === 0) {
+                alert('කරුණාකර අවශ්‍ය තොරතුරු සම්පූර්ණ කරන්න:\n- Web sources: URL සහ Organization/Author\n- Tertiary sources: Title\n- අනෙක් sources: Title');
+                return;
+            }
+            
+            validRefs.forEach(ref => {
+                let citation = '';
+                
+                if (ref.sourceType === 'web') {
+                    if (ref.organization) {
+                        citation += ref.organization + ' ';
+                    } else {
+                        const authors = formatAuthors(ref.authors, 'harvard');
+                        if (authors) citation += authors + ' ';
+                    }
+                    
+                    if (ref.year) citation += `(${ref.year}) `;
+                    if (ref.bookTitle) citation += `*${ref.bookTitle}*. `;
+                    citation += `Available at: ${ref.url}`;
+                    if (ref.accessDate) citation += ` (Accessed: ${formatAccessDate(ref.accessDate)})`;
+                    
+                } else {
+                    const authors = formatAuthors(ref.authors, 'harvard');
+                    if (authors) citation += authors + ' ';
+                    else if (ref.editors.length > 0) {
+                        const editors = formatAuthors(ref.editors, 'harvard');
+                        if (editors) citation += editors + ' (eds.) ';
+                    }
+                    
+                    if (ref.year) citation += `(${ref.year}) `;
+                    
+                    const translators = formatAuthors(ref.translators, 'harvard');
+                    if (translators) citation += `Trans. ${translators} `;
+                    
+                    if (ref.bookTitle) citation += `*${ref.bookTitle}*. `;
+                    if (ref.publisher) citation += `${ref.publisher}.`;
+                    
+                    if (ref.url) {
+                        citation += ` Available at: ${ref.url}`;
+                    }
+                }
+                
+                output += citation.trim() + '\n\n';
+            });
+            
+            document.getElementById('result').textContent = output;
+            document.getElementById('output').classList.add('show');
+            document.getElementById('output').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function generateChicago() {
+            let output = '';
+            const validRefs = data.filter(ref => {
+                if (ref.sourceType === 'web') {
+                    return ref.url.trim() && (ref.organization?.trim() || ref.authors[0]?.lastName?.trim());
+                } else if (ref.sourceType === 'tertiary') {
+                    return ref.bookTitle.trim();
+                }
+                return ref.bookTitle.trim();
+            });
+            
+            if (validRefs.length === 0) {
+                alert('කරුණාකර අවශ්‍ය තොරතුරු සම්පූර්ණ කරන්න:\n- Web sources: URL සහ Organization/Author\n- Tertiary sources: Title\n- අනෙක් sources: Title');
+                return;
+            }
+            
+            validRefs.forEach(ref => {
+                let citation = '';
+                
+                if (ref.sourceType === 'web') {
+                    if (ref.organization) {
+                        citation += ref.organization + '. ';
+                    } else {
+                        const authors = formatAuthors(ref.authors, 'chicago');
+                        if (authors) citation += authors + '. ';
+                    }
+                    
+                    if (ref.bookTitle) citation += `"${ref.bookTitle}." `;
+                    if (ref.year) citation += `${ref.year}. `;
+                    citation += `${ref.url}`;
+                    if (ref.accessDate) citation += `. Accessed ${formatAccessDate(ref.accessDate)}`;
+                    citation += '.';
+                    
+                } else {
+                    const authors = formatAuthors(ref.authors, 'chicago');
+                    if (authors) citation += authors + '. ';
+                    else if (ref.editors.length > 0) {
+                        const editors = formatAuthors(ref.editors, 'chicago');
+                        if (editors) citation += editors + ', eds. ';
+                    }
+                    
+                    if (ref.bookTitle) citation += `*${ref.bookTitle}*. `;
+                    
+                    const translators = formatAuthors(ref.translators, 'chicago');
+                    if (translators) citation += `Translated by ${translators}. `;
+                    
+                    if (ref.publisher) citation += `${ref.publisher}, `;
+                    if (ref.year) citation += `${ref.year}.`;
+                    
+                    if (ref.url) {
+                        citation += ` ${ref.url}.`;
+                    }
+                }
+                
+                output += citation.trim() + '\n\n';
+            });
+            
+            document.getElementById('result').textContent = output;
+            document.getElementById('output').classList.add('show');
+            document.getElementById('output').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function generateAPA() {
+            let output = '';
+            const validRefs = data.filter(ref => {
+                if (ref.sourceType === 'web') {
+                    return ref.url.trim() && (ref.organization?.trim() || ref.authors[0]?.lastName?.trim());
+                } else if (ref.sourceType === 'tertiary') {
+                    return ref.bookTitle.trim();
+                }
+                return ref.bookTitle.trim();
+            });
+            
+            if (validRefs.length === 0) {
+                alert('කරුණාකර අවශ්‍ය තොරතුරු සම්පූර්ණ කරන්න:\n- Web sources: URL සහ Organization/Author\n- Tertiary sources: Title\n- අනෙක් sources: Title');
+                return;
+            }
+            
+            validRefs.forEach(ref => {
+                let citation = '';
+                
+                if (ref.sourceType === 'web') {
+                    if (ref.organization) {
+                        citation += ref.organization + '. ';
+                    } else {
+                        const authors = formatAuthors(ref.authors, 'apa');
+                        if (authors) citation += authors + ' ';
+                    }
+                    
+                    if (ref.year) citation += `(${ref.year}). `;
+                    else citation += '(n.d.). ';
+                    
+                    if (ref.bookTitle) citation += `*${ref.bookTitle}*. `;
+                    citation += `${ref.url}`;
+                    
+                } else {
+                    const authors = formatAuthors(ref.authors, 'apa');
+                    if (authors) citation += authors + ' ';
+                    else if (ref.editors.length > 0) {
+                        const editors = formatAuthors(ref.editors, 'apa');
+                        if (editors) citation += editors + ' (Eds.). ';
+                    }
+                    
+                    if (ref.year) citation += `(${ref.year}). `;
+                    
+                    if (ref.bookTitle) citation += `*${ref.bookTitle}* `;
+                    
+                    const translators = formatAuthors(ref.translators, 'apa');
+                    if (translators) citation += `(${translators}, Trans.). `;
+                    
+                    if (ref.publisher) citation += `${ref.publisher}.`;
+                    
+                    if (ref.url) {
+                        citation += ` ${ref.url}`;
+                    }
+                }
+                
+                output += citation.trim() + '\n\n';
+            });
+            
+            document.getElementById('result').textContent = output;
+            document.getElementById('output').classList.add('show');
+            document.getElementById('output').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function copyText() {
+            const text = document.getElementById('result').textContent;
+            navigator.clipboard.writeText(text).then(() => {
+                alert('✅ පාඨය පසුරු පුවරුවට පිටපත් කරන ලදි! (Text copied to clipboard!)');
+            });
+        }
+
+        // Initialize with one empty set
+        addNewSet();
+    </script>
+</body>
+</html>
