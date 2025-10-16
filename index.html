@@ -233,14 +233,39 @@
             border-bottom: 3px solid #3498db;
             padding-bottom: 10px;
         }
+        .source-category {
+            margin-bottom: 40px;
+        }
+        .source-category h3 {
+            color: #2c3e50;
+            font-size: 14px;
+            margin-bottom: 10px;
+            padding: 10px 15px;
+            border-radius: 8px;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-left: 5px solid #3498db;
+        }
+        .category-primary h3 {
+            border-left-color: #3498db;
+        }
+        .category-secondary h3 {
+            border-left-color: #9b59b6;
+        }
+        .category-tertiary h3 {
+            border-left-color: #e67e22;
+        }
+        .category-web h3 {
+            border-left-color: #16a085;
+        }
         .output pre {
             background: #f8f9fa;
             padding: 20px;
             border-radius: 8px;
             white-space: pre-wrap;
             word-wrap: break-word;
-            line-height: 2;
+            line-height: 1.6;
             border-left: 4px solid #3498db;
+            font-size: 12px;
         }
         .source-badge {
             display: inline-block;
@@ -324,7 +349,7 @@
 
     <div class="output" id="output">
         <h2>📋 මූලාශ්‍ර නාමාවලිය / Bibliography:</h2>
-        <pre id="result"></pre>
+        <div id="result"></div>
         <div class="action-buttons">
             <button class="copy-btn" onclick="copyText()">📋 Copy Text</button>
         </div>
@@ -708,200 +733,273 @@
             return `${date.getDate()} ${months[date.getMonth()]} ${date.getFullYear()}`;
         }
 
-        function generateHarvard() {
-            let output = '';
-            const validRefs = data.filter(ref => {
-                if (ref.sourceType === 'web') {
-                    return ref.url.trim() && (ref.organization?.trim() || ref.authors[0]?.lastName?.trim());
-                } else if (ref.sourceType === 'tertiary') {
-                    return ref.bookTitle.trim();
+        function groupAndSortReferences() {
+            const grouped = {
+                primary: [],
+                secondary: [],
+                tertiary: [],
+                web: []
+            };
+            
+            data.forEach(ref => {
+                const isValid = ref.sourceType === 'web' 
+                    ? ref.url.trim() && (ref.organization?.trim() || ref.authors[0]?.lastName?.trim())
+                    : ref.sourceType === 'tertiary'
+                    ? ref.bookTitle.trim()
+                    : ref.bookTitle.trim();
+                
+                if (isValid) {
+                    grouped[ref.sourceType].push(ref);
                 }
-                return ref.bookTitle.trim();
             });
             
-            if (validRefs.length === 0) {
-                alert('කරුණාකර අවශ්‍ය තොරතුරු සම්පූර්ණ කරන්න:\n- Web sources: URL සහ Organization/Author\n- Tertiary sources: Title\n- අනෙක් sources: Title');
-                return;
-            }
-            
-            validRefs.forEach(ref => {
-                let citation = '';
-                
-                if (ref.sourceType === 'web') {
-                    if (ref.organization) {
-                        citation += ref.organization + ' ';
-                    } else {
-                        const authors = formatAuthors(ref.authors, 'harvard');
-                        if (authors) citation += authors + ' ';
-                    }
-                    
-                    if (ref.year) citation += `(${ref.year}) `;
-                    if (ref.bookTitle) citation += `*${ref.bookTitle}*. `;
-                    citation += `Available at: ${ref.url}`;
-                    if (ref.accessDate) citation += ` (Accessed: ${formatAccessDate(ref.accessDate)})`;
-                    
-                } else {
-                    const authors = formatAuthors(ref.authors, 'harvard');
-                    if (authors) citation += authors + ' ';
-                    else if (ref.editors.length > 0) {
-                        const editors = formatAuthors(ref.editors, 'harvard');
-                        if (editors) citation += editors + ' (eds.) ';
-                    }
-                    
-                    if (ref.year) citation += `(${ref.year}) `;
-                    
-                    const translators = formatAuthors(ref.translators, 'harvard');
-                    if (translators) citation += `Trans. ${translators} `;
-                    
-                    if (ref.bookTitle) citation += `*${ref.bookTitle}*. `;
-                    if (ref.publisher) citation += `${ref.publisher}.`;
-                    
-                    if (ref.url) {
-                        citation += ` Available at: ${ref.url}`;
-                    }
-                }
-                
-                output += citation.trim() + '\n\n';
+            Object.keys(grouped).forEach(type => {
+                grouped[type].sort((a, b) => {
+                    const aKey = a.organization?.trim() || a.authors[0]?.lastName?.trim() || a.editors[0]?.lastName?.trim() || a.bookTitle?.trim() || '';
+                    const bKey = b.organization?.trim() || b.authors[0]?.lastName?.trim() || b.editors[0]?.lastName?.trim() || b.bookTitle?.trim() || '';
+                    return aKey.toLowerCase().localeCompare(bKey.toLowerCase());
+                });
             });
             
-            document.getElementById('result').textContent = output;
-            document.getElementById('output').classList.add('show');
-            document.getElementById('output').scrollIntoView({ behavior: 'smooth' });
+            return grouped;
         }
 
-        function generateChicago() {
-            let output = '';
-            const validRefs = data.filter(ref => {
-                if (ref.sourceType === 'web') {
-                    return ref.url.trim() && (ref.organization?.trim() || ref.authors[0]?.lastName?.trim());
-                } else if (ref.sourceType === 'tertiary') {
-                    return ref.bookTitle.trim();
+        function generateCitationText(ref, style) {
+            let citation = '';
+            
+            if (ref.sourceType === 'web') {
+                if (ref.organization) {
+                    citation += ref.organization + (style === 'chicago' ? '. ' : ' ');
+                } else {
+                    const authors = formatAuthors(ref.authors, style);
+                    if (authors) citation += authors + (style === 'chicago' ? '. ' : ' ');
                 }
-                return ref.bookTitle.trim();
-            });
-            
-            if (validRefs.length === 0) {
-                alert('කරුණාකර අවශ්‍ය තොරතුරු සම්පූර්ණ කරන්න:\n- Web sources: URL සහ Organization/Author\n- Tertiary sources: Title\n- අනෙක් sources: Title');
-                return;
-            }
-            
-            validRefs.forEach(ref => {
-                let citation = '';
                 
-                if (ref.sourceType === 'web') {
-                    if (ref.organization) {
-                        citation += ref.organization + '. ';
-                    } else {
-                        const authors = formatAuthors(ref.authors, 'chicago');
-                        if (authors) citation += authors + '. ';
-                    }
-                    
+                if (style === 'apa') {
+                    if (ref.year) citation += `(${ref.year}). `;
+                    else citation += '(n.d.). ';
+                    if (ref.bookTitle) citation += `${ref.bookTitle}. `;
+                    citation += `${ref.url}`;
+                } else if (style === 'chicago') {
                     if (ref.bookTitle) citation += `"${ref.bookTitle}." `;
                     if (ref.year) citation += `${ref.year}. `;
                     citation += `${ref.url}`;
                     if (ref.accessDate) citation += `. Accessed ${formatAccessDate(ref.accessDate)}`;
                     citation += '.';
-                    
                 } else {
-                    const authors = formatAuthors(ref.authors, 'chicago');
-                    if (authors) citation += authors + '. ';
-                    else if (ref.editors.length > 0) {
-                        const editors = formatAuthors(ref.editors, 'chicago');
-                        if (editors) citation += editors + ', eds. ';
-                    }
-                    
-                    if (ref.bookTitle) citation += `*${ref.bookTitle}*. `;
-                    
-                    const translators = formatAuthors(ref.translators, 'chicago');
-                    if (translators) citation += `Translated by ${translators}. `;
-                    
-                    if (ref.publisher) citation += `${ref.publisher}, `;
-                    if (ref.year) citation += `${ref.year}.`;
-                    
-                    if (ref.url) {
-                        citation += ` ${ref.url}.`;
+                    if (ref.year) citation += `(${ref.year}) `;
+                    if (ref.bookTitle) citation += `${ref.bookTitle}. `;
+                    citation += `Available at: ${ref.url}`;
+                    if (ref.accessDate) citation += ` (Accessed: ${formatAccessDate(ref.accessDate)})`;
+                }
+                
+            } else {
+                const authors = formatAuthors(ref.authors, style);
+                if (authors) citation += authors + (style === 'chicago' ? '. ' : ' ');
+                else if (ref.editors.length > 0) {
+                    const editors = formatAuthors(ref.editors, style);
+                    if (editors) {
+                        if (style === 'apa') citation += editors + ' (Eds.). ';
+                        else if (style === 'chicago') citation += editors + ', eds. ';
+                        else citation += editors + ' (eds.) ';
                     }
                 }
                 
-                output += citation.trim() + '\n\n';
-            });
+                if (style === 'apa') {
+                    if (ref.year) citation += `(${ref.year}). `;
+                    if (ref.bookTitle) citation += `${ref.bookTitle} `;
+                    const translators = formatAuthors(ref.translators, style);
+                    if (translators) citation += `(${translators}, Trans.). `;
+                    if (ref.publisher) citation += `${ref.publisher}.`;
+                    if (ref.url) citation += ` ${ref.url}`;
+                } else if (style === 'chicago') {
+                    if (ref.bookTitle) citation += `${ref.bookTitle}. `;
+                    const translators = formatAuthors(ref.translators, style);
+                    if (translators) citation += `Translated by ${translators}. `;
+                    if (ref.publisher) citation += `${ref.publisher}, `;
+                    if (ref.year) citation += `${ref.year}.`;
+                    if (ref.url) citation += ` ${ref.url}.`;
+                } else {
+                    if (ref.year) citation += `(${ref.year}) `;
+                    const translators = formatAuthors(ref.translators, style);
+                    if (translators) citation += `Trans. ${translators} `;
+                    if (ref.bookTitle) citation += `${ref.bookTitle}. `;
+                    if (ref.publisher) citation += `${ref.publisher}.`;
+                    if (ref.url) citation += ` Available at: ${ref.url}`;
+                }
+            }
             
-            document.getElementById('result').textContent = output;
-            document.getElementById('output').classList.add('show');
-            document.getElementById('output').scrollIntoView({ behavior: 'smooth' });
+            return citation.trim();
         }
 
-        function generateAPA() {
-            let output = '';
-            const validRefs = data.filter(ref => {
-                if (ref.sourceType === 'web') {
-                    return ref.url.trim() && (ref.organization?.trim() || ref.authors[0]?.lastName?.trim());
-                } else if (ref.sourceType === 'tertiary') {
-                    return ref.bookTitle.trim();
-                }
-                return ref.bookTitle.trim();
-            });
+        function generateBibliography(style) {
+            const grouped = groupAndSortReferences();
+            const totalRefs = Object.values(grouped).reduce((sum, arr) => sum + arr.length, 0);
             
-            if (validRefs.length === 0) {
+            if (totalRefs === 0) {
                 alert('කරුණාකර අවශ්‍ය තොරතුරු සම්පූර්ණ කරන්න:\n- Web sources: URL සහ Organization/Author\n- Tertiary sources: Title\n- අනෙක් sources: Title');
                 return;
             }
             
-            validRefs.forEach(ref => {
-                let citation = '';
-                
-                if (ref.sourceType === 'web') {
-                    if (ref.organization) {
-                        citation += ref.organization + '. ';
-                    } else {
-                        const authors = formatAuthors(ref.authors, 'apa');
-                        if (authors) citation += authors + ' ';
-                    }
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = '';
+            
+            const categories = [
+                { key: 'primary', title: 'ප්‍රාථමික මූලාශ්‍ර / Primary Sources', class: 'category-primary' },
+                { key: 'secondary', title: 'ද්විතීයික මූලාශ්‍ර / Secondary Sources', class: 'category-secondary' },
+                { key: 'tertiary', title: 'තෘතීයික මූලාශ්‍ර / Tertiary Sources', class: 'category-tertiary' },
+                { key: 'web', title: 'වෙබ් මූලාශ්‍ර / Web Sources', class: 'category-web' }
+            ];
+            
+            categories.forEach(category => {
+                const refs = grouped[category.key];
+                if (refs.length > 0) {
+                    const categoryDiv = document.createElement('div');
+                    categoryDiv.className = `source-category ${category.class}`;
                     
-                    if (ref.year) citation += `(${ref.year}). `;
-                    else citation += '(n.d.). ';
+                    const heading = document.createElement('h3');
+                    heading.textContent = category.title;
+                    categoryDiv.appendChild(heading);
                     
-                    if (ref.bookTitle) citation += `*${ref.bookTitle}*. `;
-                    citation += `${ref.url}`;
+                    const contentDiv = document.createElement('div');
+                    contentDiv.className = 'citation-content';
+                    contentDiv.style.fontSize = '12px';
+                    contentDiv.style.lineHeight = '1.6';
+                    contentDiv.style.background = '#f8f9fa';
+                    contentDiv.style.padding = '20px';
+                    contentDiv.style.borderRadius = '8px';
+                    contentDiv.style.borderLeft = '4px solid #3498db';
                     
-                } else {
-                    const authors = formatAuthors(ref.authors, 'apa');
-                    if (authors) citation += authors + ' ';
-                    else if (ref.editors.length > 0) {
-                        const editors = formatAuthors(ref.editors, 'apa');
-                        if (editors) citation += editors + ' (Eds.). ';
-                    }
+                    refs.forEach(ref => {
+                        const citationDiv = document.createElement('div');
+                        citationDiv.className = 'citation-item';
+                        citationDiv.style.marginBottom = '12px';
+                        citationDiv.innerHTML = generateCitationHTML(ref, style);
+                        contentDiv.appendChild(citationDiv);
+                    });
                     
-                    if (ref.year) citation += `(${ref.year}). `;
-                    
-                    if (ref.bookTitle) citation += `*${ref.bookTitle}* `;
-                    
-                    const translators = formatAuthors(ref.translators, 'apa');
-                    if (translators) citation += `(${translators}, Trans.). `;
-                    
-                    if (ref.publisher) citation += `${ref.publisher}.`;
-                    
-                    if (ref.url) {
-                        citation += ` ${ref.url}`;
-                    }
+                    categoryDiv.appendChild(contentDiv);
+                    resultDiv.appendChild(categoryDiv);
                 }
-                
-                output += citation.trim() + '\n\n';
             });
             
-            document.getElementById('result').textContent = output;
             document.getElementById('output').classList.add('show');
             document.getElementById('output').scrollIntoView({ behavior: 'smooth' });
         }
 
+        function generateCitationHTML(ref, style) {
+            let citation = '';
+            
+            if (ref.sourceType === 'web') {
+                if (ref.organization) {
+                    citation += ref.organization + (style === 'chicago' ? '. ' : ' ');
+                } else {
+                    const authors = formatAuthors(ref.authors, style);
+                    if (authors) citation += authors + (style === 'chicago' ? '. ' : ' ');
+                }
+                
+                if (style === 'apa') {
+                    if (ref.year) citation += `(${ref.year}). `;
+                    else citation += '(n.d.). ';
+                    if (ref.bookTitle) citation += `<em>${ref.bookTitle}</em>. `;
+                    citation += `${ref.url}`;
+                } else if (style === 'chicago') {
+                    if (ref.bookTitle) citation += `"${ref.bookTitle}." `;
+                    if (ref.year) citation += `${ref.year}. `;
+                    citation += `${ref.url}`;
+                    if (ref.accessDate) citation += `. Accessed ${formatAccessDate(ref.accessDate)}`;
+                    citation += '.';
+                } else {
+                    if (ref.year) citation += `(${ref.year}) `;
+                    if (ref.bookTitle) citation += `<em>${ref.bookTitle}</em>. `;
+                    citation += `Available at: ${ref.url}`;
+                    if (ref.accessDate) citation += ` (Accessed: ${formatAccessDate(ref.accessDate)})`;
+                }
+                
+            } else {
+                const authors = formatAuthors(ref.authors, style);
+                if (authors) citation += authors + (style === 'chicago' ? '. ' : ' ');
+                else if (ref.editors.length > 0) {
+                    const editors = formatAuthors(ref.editors, style);
+                    if (editors) {
+                        if (style === 'apa') citation += editors + ' (Eds.). ';
+                        else if (style === 'chicago') citation += editors + ', eds. ';
+                        else citation += editors + ' (eds.) ';
+                    }
+                }
+                
+                if (style === 'apa') {
+                    if (ref.year) citation += `(${ref.year}). `;
+                    if (ref.bookTitle) citation += `<em>${ref.bookTitle}</em> `;
+                    const translators = formatAuthors(ref.translators, style);
+                    if (translators) citation += `(${translators}, Trans.). `;
+                    if (ref.publisher) citation += `${ref.publisher}.`;
+                    if (ref.url) citation += ` ${ref.url}`;
+                } else if (style === 'chicago') {
+                    if (ref.bookTitle) citation += `<em>${ref.bookTitle}</em>. `;
+                    const translators = formatAuthors(ref.translators, style);
+                    if (translators) citation += `Translated by ${translators}. `;
+                    if (ref.publisher) citation += `${ref.publisher}, `;
+                    if (ref.year) citation += `${ref.year}.`;
+                    if (ref.url) citation += ` ${ref.url}.`;
+                } else {
+                    if (ref.year) citation += `(${ref.year}) `;
+                    const translators = formatAuthors(ref.translators, style);
+                    if (translators) citation += `Trans. ${translators} `;
+                    if (ref.bookTitle) citation += `<em>${ref.bookTitle}</em>. `;
+                    if (ref.publisher) citation += `${ref.publisher}.`;
+                    if (ref.url) citation += ` Available at: ${ref.url}`;
+                }
+            }
+            
+            return citation.trim();
+        }
+
+        function generateHarvard() {
+            generateBibliography('harvard');
+        }
+
+        function generateChicago() {
+            generateBibliography('chicago');
+        }
+
+        function generateAPA() {
+            generateBibliography('apa');
+        }
+
         function copyText() {
-            const text = document.getElementById('result').textContent;
-            navigator.clipboard.writeText(text).then(() => {
+            const resultDiv = document.getElementById('result');
+            let text = '';
+            
+            const categories = resultDiv.querySelectorAll('.source-category');
+            categories.forEach((category, index) => {
+                const heading = category.querySelector('h3');
+                if (heading) {
+                    text += heading.textContent + '\n\n';
+                }
+                
+                const citations = category.querySelectorAll('.citation-item');
+                citations.forEach(citation => {
+                    const tempDiv = document.createElement('div');
+                    tempDiv.innerHTML = citation.innerHTML;
+                    const plainText = tempDiv.textContent || tempDiv.innerText || '';
+                    if (plainText.trim()) {
+                        text += plainText.trim() + '\n\n';
+                    }
+                });
+                
+                if (index < categories.length - 1) {
+                    text += '\n';
+                }
+            });
+            
+            navigator.clipboard.writeText(text.trim()).then(() => {
                 alert('✅ පාඨය පසුරු පුවරුවට පිටපත් කරන ලදි! (Text copied to clipboard!)');
+            }).catch(err => {
+                alert('❌ පිටපත් කිරීමේ දෝෂයක්: ' + err);
             });
         }
 
-        // Initialize with one empty set
         addNewSet();
     </script>
 </body>
